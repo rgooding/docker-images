@@ -25,7 +25,7 @@ RUN set -x \
 
 FROM dse-server-base as base
 
-ARG VERSION=[=version]
+ARG VERSION
 ARG TARBALL=dse-${VERSION}-bin.tar.gz
 ARG DOWNLOAD_URL=${URL_PREFIX}/${TARBALL}
 
