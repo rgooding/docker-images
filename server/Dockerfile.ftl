@@ -6,6 +6,7 @@ FROM dse-base as dse-server-base
 
 ENV DSE_HOME /opt/dse
 ENV DSE_AGENT_HOME /opt/agent
+ENV URL_PREFIX=https://downloads.datastax.com/enterprise
 
 RUN set -x \
 # Add DSE user
@@ -28,9 +29,9 @@ ARG VERSION=[=version]
 ARG TARBALL=dse-${VERSION}-bin.tar.gz
 ARG DOWNLOAD_URL=${URL_PREFIX}/${TARBALL}
 
-ARG DSE_AGENT_VERSION=[=agentVersion]
-ARG DSE_AGENT_TARBALL=datastax-agent-${DSE_AGENT_VERSION}.tar.gz
-ARG DSE_AGENT_DOWNLOAD_URL=${URL_PREFIX}/${DSE_AGENT_TARBALL}
+#ARG DSE_AGENT_VERSION=[=agentVersion]
+#ARG DSE_AGENT_TARBALL=datastax-agent-${DSE_AGENT_VERSION}.tar.gz
+#ARG DSE_AGENT_DOWNLOAD_URL=${URL_PREFIX}/${DSE_AGENT_TARBALL}
 
 COPY /* /
 
@@ -40,12 +41,12 @@ RUN set -x \
 # Unpack tarball
     && tar -C "$DSE_HOME" --strip-components=1 -xzf /${TARBALL} \
     && rm /${TARBALL} \
-    && chown -R dse:dse ${DSE_HOME} \
+    && chown -R dse:dse ${DSE_HOME}
 # Download Agent tarball if needed
-    && if test ! -e /${DSE_AGENT_TARBALL}; then wget -nv --show-progress --progress=bar:force:noscroll -O /${DSE_AGENT_TARBALL} ${DSE_AGENT_DOWNLOAD_URL} ; fi \
-    && mkdir -p "$DSE_AGENT_HOME" \
-    && tar -C "$DSE_AGENT_HOME" --strip-components=1 -xzf /${DSE_AGENT_TARBALL} \
-    && rm /${DSE_AGENT_TARBALL}
+#    && if test ! -e /${DSE_AGENT_TARBALL}; then wget -nv --show-progress --progress=bar:force:noscroll -O /${DSE_AGENT_TARBALL} ${DSE_AGENT_DOWNLOAD_URL} ; fi \
+#    && mkdir -p "$DSE_AGENT_HOME" \
+#    && tar -C "$DSE_AGENT_HOME" --strip-components=1 -xzf /${DSE_AGENT_TARBALL} \
+#    && rm /${DSE_AGENT_TARBALL}
 
 FROM dse-server-base
 
@@ -55,7 +56,7 @@ COPY files /
 
 COPY --chown=dse:dse --from=base $DSE_HOME $DSE_HOME
 
-COPY --chown=dse:dse --from=base $DSE_AGENT_HOME $DSE_AGENT_HOME
+#COPY --chown=dse:dse --from=base $DSE_AGENT_HOME $DSE_AGENT_HOME
 
 # Create folders
 RUN (for dir in /var/lib/cassandra \
@@ -92,12 +93,12 @@ EXPOSE 8182
 # DSEFS
 EXPOSE 5598 5599
 
-<#if version.greaterEqualThan('6.7.0')>
-EXPOSE 10000
-
-#INSIGHTS
-EXPOSE 9103
-</#if>
+#<#if version.greaterEqualThan('6.7.0')>
+#EXPOSE 10000
+#
+##INSIGHTS
+#EXPOSE 9103
+#</#if>
 
 # Run DSE in foreground by default
 ENTRYPOINT [ "/entrypoint.sh", "dse", "cassandra", "-f" ]
